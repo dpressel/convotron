@@ -9,7 +9,19 @@ ctron_conv1 <- function(x, y) {
     .Call('convotron_ctron_conv1', PACKAGE = 'convotron', x, y)
 }
 
-ctron_fftfilt <- function(x, y, corr) {
-    .Call('convotron_ctron_fftfilt', PACKAGE = 'convotron', x, y, corr)
+ctron_fftfilt1 <- function(x, y, corr) {
+    .Call('convotron_ctron_fftfilt1', PACKAGE = 'convotron', x, y, corr)
+}
+
+ctron_fftfilt1mx <- function(x, y, corr) {
+    .Call('convotron_ctron_fftfilt1mx', PACKAGE = 'convotron', x, y, corr)
+}
+
+ctron_xcorr1mx <- function(x, y) {
+    .Call('convotron_ctron_xcorr1mx', PACKAGE = 'convotron', x, y)
+}
+
+ctron_conv1mx <- function(x, y) {
+    .Call('convotron_ctron_conv1mx', PACKAGE = 'convotron', x, y)
 }
 
