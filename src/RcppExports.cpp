@@ -79,3 +79,51 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// ctron_xcorr1mxv
+NumericMatrix ctron_xcorr1mxv(const NumericMatrix& x, const NumericVector& y);
+RcppExport SEXP convotron_ctron_xcorr1mxv(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
+    __result = Rcpp::wrap(ctron_xcorr1mxv(x, y));
+    return __result;
+END_RCPP
+}
+// ctron_conv1mxv
+NumericMatrix ctron_conv1mxv(const NumericMatrix& x, const NumericVector& y);
+RcppExport SEXP convotron_ctron_conv1mxv(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
+    __result = Rcpp::wrap(ctron_conv1mxv(x, y));
+    return __result;
+END_RCPP
+}
+// ctron_xcorr2mx
+NumericMatrix ctron_xcorr2mx(const NumericMatrix& x, const NumericMatrix& y);
+RcppExport SEXP convotron_ctron_xcorr2mx(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type y(ySEXP);
+    __result = Rcpp::wrap(ctron_xcorr2mx(x, y));
+    return __result;
+END_RCPP
+}
+// ctron_conv2mx
+NumericMatrix ctron_conv2mx(const NumericMatrix& x, const NumericMatrix& y);
+RcppExport SEXP convotron_ctron_conv2mx(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type y(ySEXP);
+    __result = Rcpp::wrap(ctron_conv2mx(x, y));
+    return __result;
+END_RCPP
+}

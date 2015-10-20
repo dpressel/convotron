@@ -15,51 +15,9 @@ int nextPowerOf2(int n)
     return n;
 }
 
-// [[Rcpp::export]]
-NumericVector ctron_xcorr1(const NumericVector& x, const NumericVector& y)
-{
-
-    int iT = x.size();
-    int fT = y.size();
-    
-    // valid-region cross-correlation output
-    NumericVector z(iT - fT + 1, 0.);
-    int oT = z.size();
-
-    for (int i = 0; i < oT; ++i)
-    {
-    	for (int j = 0; j < fT; ++j)
-    	{
-    	    z[i] += x[i + j] * y[j];
-    	}
-    } 
-    return z;
-}
-
-// [[Rcpp::export]]
-NumericVector ctron_conv1(const NumericVector& x, const NumericVector& y)
-{
-
-    int iT = x.size();
-    int fT = y.size();
-    
-    // Valid region convolution output
-    NumericVector z(iT - fT + 1, 0.);
-    int oT = z.size();
-
-    // Same as xcorr by y is time-reversed
-    for (int i = 0; i < oT; ++i)
-    {
-    	for (int j = 0; j < fT; ++j)
-    	{
-    	    z[i] += x[i + j] * y[fT - 1 - j];
-    	}
-    } 
-    return z;
-}
-
-
-void fftfilt1(int wide, fftw_plan& p, fftw_complex* xwide, fftw_complex* ywide, bool corr)
+// 1D FFT filtering
+void fftfilt1(int wide, fftw_plan& p, 
+	      fftw_complex* xwide, fftw_complex* ywide, bool corr)
 {
 
     // FFTs
@@ -83,6 +41,69 @@ void fftfilt1(int wide, fftw_plan& p, fftw_complex* xwide, fftw_complex* ywide, 
 
 }
 
+//' Valid region cross-correlation of a vector with another vector.
+//' This is equivalent to convolve(x, y, type='filter') 
+//'
+//' @param x first input signal (length(x) >= length(y))
+//' @param y second input signal (length(y) < length(x))
+//' @return a vector that is of width length(x) - length(y) + 1
+// [[Rcpp::export]]
+NumericVector ctron_xcorr1(const NumericVector& x, const NumericVector& y)
+{
+
+    int iT = x.size();
+    int fT = y.size();
+    
+    // valid-region cross-correlation output
+    NumericVector z(iT - fT + 1, 0.);
+    int oT = z.size();
+
+    for (int i = 0; i < oT; ++i)
+    {
+    	for (int j = 0; j < fT; ++j)
+    	{
+    	    z[i] += x[i + j] * y[j];
+    	}
+    } 
+    return z;
+}
+
+//' Valid region convolution of a vector with another vector
+//' This is equivalent to convolve(x, rev(y), type='filter')
+//'
+//' @param x first input signal (length(x) >= length(y))
+//' @param y second input signal (length(y) < length(x))
+//' @return a vector that is of width length(x) - length(y) + 1
+// [[Rcpp::export]]
+NumericVector ctron_conv1(const NumericVector& x, const NumericVector& y)
+{
+
+    int iT = x.size();
+    int fT = y.size();
+    
+    // Valid region convolution output
+    NumericVector z(iT - fT + 1, 0.);
+    int oT = z.size();
+
+    // Same as xcorr by y is time-reversed
+    for (int i = 0; i < oT; ++i)
+    {
+    	for (int j = 0; j < fT; ++j)
+    	{
+    	    z[i] += x[i + j] * y[fT - 1 - j];
+    	}
+    } 
+    return z;
+}
+
+
+
+//' Valid region cross-correlation of a vector with another vector using fftw.
+//' This is equivalent to convolve(x, y, type='filter') when corr=TRUE
+//'
+//' @param x first input signal (length(x) >= length(y))
+//' @param y second input signal (length(y) < length(x))
+//' @return a vector that is of width length(x) - length(y) + 1
 // [[Rcpp::export]]
 NumericVector ctron_fftfilt1(const NumericVector& x, const NumericVector& y, bool corr)
 {
@@ -156,7 +177,13 @@ NumericVector ctron_fftfilt1(const NumericVector& x, const NumericVector& y, boo
     return z;
 }
 
-
+//' Valid region convolution/cross-correlation of a matrix with another
+//' matrix using fftw.  Each matrix must have the same number of rows:
+//' one for each convolution.
+//'
+//' @param x each row is an input signal
+//' @param y each row is an input signal
+//' @return a matrix that is of width length(x[i,]) - length(y[i,]) + 1
 // [[Rcpp::export]]
 NumericMatrix ctron_fftfilt1mx(const NumericMatrix& x, const NumericMatrix& y, bool corr)
 {
@@ -235,6 +262,12 @@ NumericMatrix ctron_fftfilt1mx(const NumericMatrix& x, const NumericMatrix& y, b
 }
 
 
+//' Valid region cross-correlation of a matrix with another matrix.
+//' Each matrix must have the same number of rows: one for each cross-corr.
+//'
+//' @param x each row is an input signal
+//' @param y each row is an input signal
+//' @return a matrix that is of width length(x[i,]) - length(y[i,]) + 1
 // [[Rcpp::export]]
 NumericMatrix ctron_xcorr1mx(const NumericMatrix& x, const NumericMatrix& y)
 {
@@ -261,6 +294,12 @@ NumericMatrix ctron_xcorr1mx(const NumericMatrix& x, const NumericMatrix& y)
     return z;
 }
 
+//' Valid region convolution of a matrix with another matrix.
+//' Each matrix must have the same number of rows: one for each convolution.
+//'
+//' @param x each row is an input signal
+//' @param y each row is an input signal
+//' @return a matrix that is of width length(x[i,]) - length(y[i,]) + 1
 // [[Rcpp::export]]
 NumericMatrix ctron_conv1mx(const NumericMatrix& x, const NumericMatrix& y)
 {
@@ -285,3 +324,138 @@ NumericMatrix ctron_conv1mx(const NumericMatrix& x, const NumericMatrix& y)
     }
     return z;
 }
+
+//' Valid region convolution of a matrix with a single filter.
+//'
+//' @param x each row is an input signal
+//' @param y is an input signal
+//' @return a matrix that is of width length(x[i,]) - length(y) + 1
+// [[Rcpp::export]]
+NumericMatrix ctron_xcorr1mxv(const NumericMatrix& x, const NumericVector& y)
+{
+    int iT = x.ncol();
+    int fT = y.size();
+    int rows = x.nrow();
+
+    // Should we perform filtering using the same kernel for all rows
+    // or should we apply a different kernel
+    int oT = iT - fT + 1;
+    NumericMatrix z(rows, oT);
+
+    for (int k = 0; k < rows; ++k)
+    {
+	for (int i = 0; i < oT; ++i)
+	{
+	    for (int j = 0; j < fT; ++j)
+	    {
+		z(k, i) += x(k, i + j) * y[j];
+	    }
+	}
+    }
+    return z;
+}
+
+//' Valid region convolution of a matrix with a single filter.
+//'
+//' @param x each row is an input signal
+//' @param y is an input signal
+//' @return a matrix that is of width length(x[i,]) - length(y) + 1
+// [[Rcpp::export]]
+NumericMatrix ctron_conv1mxv(const NumericMatrix& x, const NumericVector& y)
+{
+    int iT = x.ncol();
+    int fT = y.size();
+    int rows = x.nrow();
+
+    // Should we perform filtering using the same kernel for all rows
+    // or should we apply a different kernel
+    int oT = iT - fT + 1;
+    NumericMatrix z(rows, oT);
+
+    for (int k = 0; k < rows; ++k)
+    {
+	for (int i = 0; i < oT; ++i)
+	{
+	    for (int j = 0; j < fT; ++j)
+	    {
+		z(k, i) += x(k, i + j) * y[fT - 1 - j];
+	    }
+	}
+    }
+    return z;
+}
+
+//' Valid region cross-correlation of a matrix with a filter matrix
+//'
+//' @param x each row is an input signal of dims (iR, iC)
+//' @param y is an input signal of dims (fR, fC), fR <= iR, fC <= iC
+//' @return a matrix that is of dims (iR - fR + 1, iC - fC + 1)
+// [[Rcpp::export]]
+NumericMatrix ctron_xcorr2mx(const NumericMatrix& x, const NumericMatrix& y)
+{
+    int iR = x.nrow();
+    int iC = x.ncol();
+    int fR = y.nrow();
+    int fC = y.ncol();
+
+    int oR = iR - fR + 1;
+    int oC = iC - fC + 1;
+
+    NumericMatrix z(oR, oC);
+
+    for (int i = 0; i < oR; ++i)
+    {
+	for (int j = 0; j < oC; ++j)
+	{
+
+	    double acc = 0.;
+	    for (int m = 0; m < fR; ++m)
+	    {
+		for (int n = 0; n < fC; ++n)
+		{
+		    acc += x(i + m, j + n) * y(m, n);
+		}
+	    }
+	    z(i, j) = acc;
+	}
+    }
+    return z;
+}
+
+//' Valid region convolution of a matrix with a filter matrix
+//'
+//' @param x each row is an input signal of dims (iR, iC)
+//' @param y is an input signal of dims (fR, fC), fR <= iR, fC <= iC
+//' @return a matrix that is of dims (iR - fR + 1, iC - fC + 1)
+// [[Rcpp::export]]
+NumericMatrix ctron_conv2mx(const NumericMatrix& x, const NumericMatrix& y)
+{
+    int iR = x.nrow();
+    int iC = x.ncol();
+    int fR = y.nrow();
+    int fC = y.ncol();
+
+    int oR = iR - fR + 1;
+    int oC = iC - fC + 1;
+
+    NumericMatrix z(oR, oC);
+
+    for (int i = 0; i < oR; ++i)
+    {
+	for (int j = 0; j < oC; ++j)
+	{
+
+	    double acc = 0.;
+	    for (int m = 0; m < fR; ++m)
+	    {
+		for (int n = 0; n < fC; ++n)
+		{
+		    acc += x(i + m, j + n) * y(fR - m - 1, fC - n - 1);
+		}
+	    }
+	    z(i, j) = acc;
+	}
+    }
+    return z;
+}
+

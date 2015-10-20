@@ -23,6 +23,28 @@ test_that('ctron_conv1() , convolve(), and ctron_fftfilt1(corr=FALSE) are same',
     expect_equal(0, delta, 1e-6)
 })
 
+# Do a 2-dimensional convolution in R, based on
+# https://github.com/cran/WaveletCo/blob/master/R/conv2.R
+# Modified to be over the valid region and return a real value
+conv2 <- function(X, A) {
+  X.pad <- matrix(0, ncol = NCOL(X) + NCOL(A)-1, nrow = NROW(X)+NROW(A)-1);
+  X.pad[1:NROW(X), 1:NCOL(X)] <- X
+  A.pad <- matrix(0, ncol = NCOL(X) + NCOL(A)-1, nrow = NROW(X)+NROW(A)-1);
+  A.pad[1:NROW(A), 1:NCOL(A)] <- A
+  
+  X.fft <- fft(X.pad);
+  A.fft <- fft(A.pad);
+  M <- Re(fft(X.fft * A.fft, inverse = TRUE))/length(X.fft)
+  
+
+  N.row <- (NROW(A) + (0:(NROW(X)-NROW(A))))
+  N.col <- (NCOL(A) + (0:(NCOL(X)-NCOL(A))))
+  XC <- M[N.row, N.col]
+ 
+  return(XC);
+
+}
+
 # Do xcorr on a matrix in a loop using R's builtin convolve function
 loopconvR <- function(Dx, Kx) {
   
@@ -59,4 +81,16 @@ test_that('ctron_xcorr1mx(), loopconvR() and ctron_fftfilt1mx() are same', {
     delta = sum(sum(abs(convolveOut - fft1Out)))
     expect_equal(0, delta, 1e-6)
 			     
+})
+
+test_that('ctron_conv2mx(), conv2() produce the same answer', {
+    A = matrix(runif(3000)*2-1, 60, 50)
+    B = matrix(runif(30)*2-1, 5, 6)
+
+    conv2Out = ctron_conv2mx(A, B)
+    conv2ROut = conv2(A, B)
+    delta = sum(sum(abs(conv2ROut - conv2Out)))
+    expect_equal(0, delta, 1e-6)		     
+
+
 })
