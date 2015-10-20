@@ -134,6 +134,7 @@ NumericVector ctron_fftfilt1(const NumericVector& x, const NumericVector& y, boo
         for (int i = 0; i < ysz; ++i)
         {
             ywide[i][0] = y[ysz - i - 1];
+            ywide[i][1] = 0;
         }
     }
 
@@ -246,32 +247,17 @@ NumericMatrix ctron_xcorr1mx(const NumericMatrix& x, const NumericMatrix& y)
     int oT = iT - fT + 1;
     NumericMatrix z(rows, oT);
 
-    if (y.nrow() == rows)
+    for (int k = 0; k < rows; ++k)
     {
-	for (int k = 0; k < rows; ++k)
+	for (int i = 0; i < oT; ++i)
 	{
-	    for (int i = 0; i < oT; ++i)
+	    for (int j = 0; j < fT; ++j)
 	    {
-		for (int j = 0; j < fT; ++j)
-		{
-		    z(k, i) += x(k, i + j) * y(k, j);
-		}
+		z(k, i) += x(k, i + j) * y(k, j);
 	    }
 	}
     }
-    else
-    {
-	for (int k = 0; k < rows; ++k)
-	{
-	    for (int i = 0; i < oT; ++i)
-	    {
-		for (int j = 0; j < fT; ++j)
-		{
-		    z(k, i) += x(k, i + j) * y[j];
-		}
-	    }
-	}
-    }
+
     return z;
 }
 
@@ -287,29 +273,13 @@ NumericMatrix ctron_conv1mx(const NumericMatrix& x, const NumericMatrix& y)
     int oT = iT - fT + 1;
     NumericMatrix z(rows, oT);
 
-    if (y.nrow() == rows)
+    for (int k = 0; k < rows; ++k)
     {
-	for (int k = 0; k < rows; ++k)
+	for (int i = 0; i < oT; ++i)
 	{
-	    for (int i = 0; i < oT; ++i)
+	    for (int j = 0; j < fT; ++j)
 	    {
-		for (int j = 0; j < fT; ++j)
-		{
-		    z(k, i) += x(k, i + j) * y(k, fT - 1 - j);
-		}
-	    }
-	}
-    }
-    else
-    {
-	for (int k = 0; k < rows; ++k)
-	{
-	    for (int i = 0; i < oT; ++i)
-	    {
-		for (int j = 0; j < fT; ++j)
-		{
-		    z(k, i) += x(k, i + j) * y[fT - 1 - j];
-		}
+		z(k, i) += x(k, i + j) * y(k, fT - 1 - j);
 	    }
 	}
     }

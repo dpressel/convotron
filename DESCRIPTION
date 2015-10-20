@@ -9,3 +9,4 @@ Description: This is demonstration software for native code implementations of c
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.1)
 LinkingTo: Rcpp
+Suggests: testthat
