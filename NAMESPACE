@@ -1,0 +1,3 @@
+useDynLib(convotron)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)

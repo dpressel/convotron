@@ -1,0 +1,11 @@
+Package: convotron
+Type: Package
+Title: Some convolutions in native code (C++)
+Version: 1.0
+Date: 2015-10-17
+Author: dpressel 
+Maintainer: <dpressel@gmail.com>
+Description: This is demonstration software for native code implementations of convolution routines in the time and frequency domains.
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.12.1)
+LinkingTo: Rcpp
