@@ -199,63 +199,93 @@ NumericMatrix ctron_fftfilt1mx(const NumericMatrix& x, const NumericMatrix& y, b
     int narrow = xsz - ysz + 1;
     NumericMatrix z(rows, narrow);
 
-    fftw_plan p;
+    fftw_plan p, pinv;
 
     // Buffers for FFTs
-    fftw_complex* xwide = 
-	(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * wide);
-    fftw_complex* ywide =
-	(fftw_complex*) fftw_malloc(sizeof(fftw_complex) * wide);
+    int doubleWide = 2 * sizeof(fftw_complex) * wide;
+    fftw_complex* xy = (fftw_complex*) fftw_malloc(doubleWide);
 
-    int mn = std::min<int>(xsz, ysz);
+    int rank = 1;
+    int n[] = {wide};
+    int howmany = 2;
+    int istride = 1;
+    int ostride = 1;
+    int idist = wide;
+    int odist = wide;
+    int *inembed = n;
+    int *onembed = n;
+    
+    p = fftw_plan_many_dft(rank, n, howmany,
+			   xy, inembed,
+			   istride, idist,
+			   xy, onembed,
+			   ostride, odist,
+			   FFTW_FORWARD, FFTW_ESTIMATE);
 
+    howmany = 1;
+    
+    pinv = fftw_plan_many_dft(rank, n, howmany,
+			      xy, inembed,
+			      istride, idist,
+			      xy, onembed,
+			      ostride, odist,
+			      FFTW_BACKWARD, FFTW_ESTIMATE);
 
     for (int k = 0; k < rows; ++k)
     {
-
-	// Zero memory upfront
-	for (int i = mn; i < wide; ++i)
-	{
-	    xwide[i][0] = xwide[i][1] = ywide[i][0] = ywide[i][1] = 0.;
-	}
-
+	memset(xy, 0, doubleWide);
+      
 	// copy x into a complex array
 	for (int i = 0; i < xsz; ++i)
 	{
-	    xwide[i][0] = x(k, i);
-	    xwide[i][1] = 0;
+	    xy[i][0] = x(k, i);
 	}
 
 	// copy y into a complex array
 	if (corr)
 	{
-	    for (int i = 0; i < ysz; ++i)
+	    for (int i = 0, j = wide; i < ysz; ++i, ++j)
 	    {
-		ywide[i][0] = y(k, i);
-		ywide[i][1] = 0;
+		xy[j][0] = y(k, i);
 	    }
 	}
 	else
 	{
-	    for (int i = 0; i < ysz; ++i)
+	    for (int i = 0, j = wide; i < ysz; ++i, ++j)
 	    {
-		ywide[i][0] = y(k, ysz - i - 1);
+		xy[i][0] = y(k, ysz - i - 1);
 	    }
 	}
 
-	fftfilt1(wide, p, xwide, ywide, corr);
+	fftw_execute(p);
+	
+
+	// conj, followed by complex multiply
+	for (int i = 0, j = wide; i < wide; i++, j++)
+	{
+	    
+	    xy[j][1] = -xy[j][1];
+	    double xwr = xy[i][0];
+	    double xwi = xy[i][1];
+	    xy[i][0] = xwr * xy[j][0] - xwi * xy[j][1];
+	    xy[i][1] = xwr * xy[j][1] + xwi * xy[j][0];
+	}
+
+	// IFFT
+	//p = fftw_plan_dft_1d(wide, xy, xy, FFTW_BACKWARD, FFTW_ESTIMATE);
+	fftw_execute(pinv);
 
 	// Copy to output
 	for (int i = 0; i < narrow; ++i)
 	{
-	    double re = xwide[i][0] / wide;
+	    double re = xy[i][0] / wide;
 	    z(k, i) = re;
 	}
     }
     // Cleanup
     fftw_destroy_plan(p);
-    fftw_free(xwide);
-    fftw_free(ywide);
+    fftw_destroy_plan(pinv);
+    fftw_free(xy);
 
     // Go home
     return z;
