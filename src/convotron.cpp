@@ -253,7 +253,7 @@ NumericMatrix ctron_fftfilt1mx(const NumericMatrix& x, const NumericMatrix& y, b
 	{
 	    for (int i = 0, j = wide; i < ysz; ++i, ++j)
 	    {
-		xy[i][0] = y(k, ysz - i - 1);
+		xy[j][0] = y(k, ysz - i - 1);
 	    }
 	}
 
